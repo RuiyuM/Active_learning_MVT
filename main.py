@@ -199,13 +199,13 @@ def main(args):
     if args.data_set == 'M40':
         train_txt = 'trainmodel40.txt'
         test_txt = 'testmodel40.txt'
-        img_ext = 'jpg'
-        total_view = 12
+        img_ext = 'png'
+        total_view = 20
     elif args.data_set == 'M10':
         train_txt = 'trainmodel10.txt'
         test_txt = 'testmodel10.txt'
-        img_ext = 'jpg'
-        total_view = 12
+        img_ext = 'png'
+        total_view = 20
 
     if args.data_set in ['M40', 'M40v2']:
         args.nb_classes = 40  # ModelNet40 class number
@@ -228,11 +228,10 @@ def main(args):
                             view_num=args.view_num,
                             total_view=total_view,
                             transform=torchvision.transforms.Compose([
-                              GroupScale(int(256)),
-                              GroupCenterCrop(224),
-                              Stack(roll=False),
-                              ToTorchFormatTensor(div=True),
-                              normalize,
+                                train_augmentation,
+                                Stack(roll=False),
+                                ToTorchFormatTensor(div=True),
+                                normalize,
                             ]))
 
     if True:  # args.distributed:
