@@ -35,6 +35,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
         samples = samples.to(device, non_blocking=True)  # B, 3xN_view, 224, 224
+        B, V, C, H = samples.shape
         samples = samples.reshape(-1, 3, 224, 224)  # BxN, 3, 224, 224
         targets = targets.to(device, non_blocking=True)  # B
 
@@ -42,7 +43,8 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
             samples, targets = mixup_fn(samples, targets)  # BN,3,224,224  B,C
 
         with torch.cuda.amp.autocast():
-            outputs = model(samples)
+            outputs, features_k, features = model(B, 20, 20, samples)
+            # outputs = model(samples)
             loss = criterion(samples, outputs, targets)
 
         loss_value = loss.item()
@@ -82,12 +84,14 @@ def evaluate(data_loader, model, device):
 
     for images, target in metric_logger.log_every(data_loader, 10, header):
         images = images.to(device, non_blocking=True)
+        B, V, C, H = images.shape
         images = images.reshape(-1, 3, 224, 224)  # BxN, 3, 224, 224
         target = target.to(device, non_blocking=True)
 
         # compute output
         with torch.cuda.amp.autocast():
-            output = model(images)
+            output, features_k, features = model(B, 20, 20, images)
+            # output = model(images)
             # output = output.reshape(target.shape[0], 6, 40)  # B, N, C (class number)
             # output = output.mean(1)  # B,C  average pooling on multi-view
             loss = criterion(output, target)

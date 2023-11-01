@@ -285,14 +285,17 @@ def main(args):
     pretrained_model = 'deit_small_patch16_224-cd65a155.pth'
     model = create_model(
         args.model,
-        pretrained=False,
-        num_classes=args.nb_classes,
+        pretrained=True,
+        num_classes=1000,
+        # num_classes=args.nb_classes,
         drop_rate=args.drop,
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
+    model.head = torch.nn.Linear(model.head.in_features, 10)
     print(f'Use pretrained mode: {pretrained_model}')
 
+    # 这里会不会也有问题
     if args.finetune:
         if args.finetune.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
